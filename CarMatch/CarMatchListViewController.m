@@ -1,30 +1,29 @@
 //
-//  CarDetailsViewController.m
+//  CarMatchListViewController.m
 //  CarMatch
 //
 //  Created by Jie Zhang on 3/2/2014.
 //  Copyright (c) 2014 Jie Zhang. All rights reserved.
 //
 
-#import "CarDetailsViewController.h"
+#import "CarMatchListViewController.h"
+#define CAR_LIST_CELL_HEIGHT 520
+#define CAR_HEADER_HEIGHT 60
 #define LABEL_HEIGHT 25
 #define BUTTON_WIDTH 50
+@interface CarMatchListViewController ()
 
-@interface CarDetailsViewController ()
 @end
 
-@implementation CarDetailsViewController{
-    UIButton *bookmarkButton;
-    UIButton *shareButton;
+@implementation CarMatchListViewController{
+    NSDictionary *carDict;
 }
-@synthesize carDict;
-@synthesize carImageView;
+@synthesize carMatchListData;
 @synthesize globals;
 @synthesize popOverController;
-@synthesize isBookmark;
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (id)initWithStyle:(UITableViewStyle)style
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    self = [super initWithStyle:style];
     if (self) {
         // Custom initialization
     }
@@ -34,22 +33,46 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
     if (!globals) {
         globals = [Globals instance];
     }
-    [self setupView];
-    
-    
+    // Uncomment the following line to preserve selection between presentations.
+    // self.clearsSelectionOnViewWillAppear = NO;
+ 
+    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
--(void)viewWillAppear:(BOOL)animated{
-    //if it from bookmark view, hide the bookmark button
-    if (isBookmark) {
-        bookmarkButton.hidden = TRUE;
-    }else{
-        bookmarkButton.hidden = FALSE;
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    // Return the number of sections.
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    // Return the number of rows in the section.
+    return carMatchListData.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *CellIdentifier = @"CarMatchListCell";
+    CarMatchListCell *cell = (CarMatchListCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[CarMatchListCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
-}
--(void)setupView{
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    NSDictionary *carInfo = [carMatchListData objectAtIndex:indexPath.row];
     NSString *yearStr = [carDict objectForKey:@"year"];
     if ([yearStr isEqualToString:@"2104"]) {
         yearStr = @"2014";
@@ -63,90 +86,122 @@
         imagePath = [[NSBundle mainBundle]pathForResource:imageStr2 ofType:@"jpeg"];
         
         if (imagePath.length < 1) {
-            carImageView.image = [UIImage imageNamed:@"test.jpg"];
+            cell.carImageView.image = [UIImage imageNamed:@"test.jpg"];
         }else{
-            carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpeg",imageStr2]];
+            cell.carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpeg",imageStr2]];
         }
         
     }else{
-        carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpg",imageStr1]];
+        cell.carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpg",imageStr1]];
     }
-    
 
-    [carImageView setContentMode:UIViewContentModeScaleAspectFit];
-    
-    UILabel *yearLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, CGRectGetMaxY(carImageView.frame), self.view.frame.size.width, LABEL_HEIGHT)];
-    [yearLabel setText:[NSString stringWithFormat:@"Year: %@",yearStr]];
-    [self.view addSubview:yearLabel];
-    
-    UILabel *manufacLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(yearLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [manufacLabel setText:[NSString stringWithFormat:@"Manufacturer: %@",[carDict objectForKey:@"MANUFACTURER"]]];
-    [self.view addSubview:manufacLabel];
-    
-    UILabel *modelLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(manufacLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [modelLabel setText:[NSString stringWithFormat:@"Model: %@",[carDict objectForKey:@"MODEL"]]];
-    [self.view addSubview:modelLabel];
-    
-    UILabel *carClassLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(modelLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [carClassLabel setText:[NSString stringWithFormat:@"Vehicle Class: %@",[carDict objectForKey:@"VEHICLE CLASS"]]];
-    [self.view addSubview:carClassLabel];
-    
-    UILabel *engineSizeLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(carClassLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [engineSizeLabel setText:[NSString stringWithFormat:@"Engine Size: %@",[carDict objectForKey:@"ENGINE SIZE"]]];
-    [self.view addSubview:engineSizeLabel];
-    
-    UILabel *cylindersLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(engineSizeLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [cylindersLabel setText:[NSString stringWithFormat:@"Cylinders: %@",[carDict objectForKey:@"CYLINDERS"]]];
-    [self.view addSubview:cylindersLabel];
-    
-    UILabel *transmissionLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(cylindersLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [transmissionLabel setText:[NSString stringWithFormat:@"Transmission: %@",[carDict objectForKey:@"TRANSMISSION"]]];
-    [self.view addSubview:transmissionLabel];
-    
-    UILabel *fuelTypeLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(transmissionLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [fuelTypeLabel setText:[NSString stringWithFormat:@"Fuel Type: %@",[carDict objectForKey:@"FUEL TYPE"]]];
-    [self.view addSubview:fuelTypeLabel];
-    
-    UILabel *fuelConSumpLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(fuelTypeLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT*2)];
-    [fuelConSumpLabel setText:[NSString stringWithFormat:@"Fuel Consumption: City: %@L/100KM or %@MI./GAL., Hwy: %@L/KM or %@MI./GAL.",[carDict objectForKey:@"FUEL CONSUMPTION_CITY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_CITY (mi./gal.)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (mi./gal.)"]]];
-    fuelConSumpLabel.numberOfLines = 0;
-    [self.view addSubview:fuelConSumpLabel];
-    
-    UILabel *fuelPerYearLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(fuelConSumpLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [fuelPerYearLabel setText:[NSString stringWithFormat:@"Fuel: %@L/YEAR",[carDict objectForKey:@"FUEL_(L) / YEAR"]]];
-    [self.view addSubview:fuelPerYearLabel];
-    
-    UILabel *emissionLabel = [[UILabel alloc]initWithFrame:CGRectMake(yearLabel.frame.origin.x, CGRectGetMaxY(fuelPerYearLabel.frame), yearLabel.frame.size.width, LABEL_HEIGHT)];
-    [emissionLabel setText:[NSString stringWithFormat:@"CO2 Emission: %@KG/YEAR",[carDict objectForKey:@"CO2 EMISSIONS_(kg) / YEAR"]]];
-    [self.view addSubview:emissionLabel];
- 
-    //init share button
-    shareButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [shareButton setBackgroundImage:[UIImage imageNamed:@"share.png"] forState:UIControlStateNormal];
-    [shareButton setFrame:CGRectMake(100, CGRectGetMaxY(emissionLabel.frame), BUTTON_WIDTH, BUTTON_WIDTH)];
-    [shareButton addTarget:self action:@selector(shareItem:) forControlEvents:UIControlEventTouchUpInside];
-    [shareButton setContentMode:UIViewContentModeScaleToFill];
-    [self.view addSubview:shareButton];
-    
-    //init bookmark button
-    bookmarkButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [bookmarkButton setBackgroundImage:[UIImage imageNamed:@"bookmarkunselected.png"] forState:UIControlStateNormal];
-    [bookmarkButton setBackgroundImage:[UIImage imageNamed:@"bookmarkselected.png"] forState:UIControlStateSelected];
-    [bookmarkButton setFrame:CGRectMake(CGRectGetMaxX(shareButton.frame)+30, shareButton.frame.origin.y, BUTTON_WIDTH, BUTTON_WIDTH)];
-    [bookmarkButton addTarget:self action:@selector(bookmarkItem:) forControlEvents:UIControlEventTouchUpInside];
-    [bookmarkButton setContentMode:UIViewContentModeScaleToFill];
-    //check current displaying content has been bookmarked or not, and update bookmarkButton background image according to the current content
-    if ([[globals.BOOKMARK_DICT allKeys] containsObject:[carDict objectForKey:@"id"]]) {
-        [bookmarkButton setSelected:TRUE];
+    [cell.yearLabel setText:[NSString stringWithFormat:@"Year: %@",yearStr]];
+    [cell.manufacLabel setText:[NSString stringWithFormat:@"Manufacturer: %@",[carInfo objectForKey:@"MANUFACTURER"]]];
+    [cell.modelLabel setText:[NSString stringWithFormat:@"Model: %@",[carInfo objectForKey:@"MODEL"]]];
+    [cell.carClassLabel setText:[NSString stringWithFormat:@"Vehicle Class: %@",[carInfo objectForKey:@"VEHICLE CLASS"]]];
+    [cell.engineSizeLabel setText:[NSString stringWithFormat:@"Engine Size: %@",[carInfo objectForKey:@"ENGINE SIZE"]]];
+    [cell.cylindersLabel setText:[NSString stringWithFormat:@"Cylinders: %@",[carInfo objectForKey:@"CYLINDERS"]]];
+    [cell.transmissionLabel setText:[NSString stringWithFormat:@"Transmission: %@",[carInfo objectForKey:@"TRANSMISSION"]]];
+    [cell.fuelTypeLabel setText:[NSString stringWithFormat:@"Fuel Type: %@",[carInfo objectForKey:@"FUEL TYPE"]]];
+    [cell.fuelConSumpLabel setText:[NSString stringWithFormat:@"Fuel Consumption: City: %@L/100KM or %@MI./GAL., Hwy: %@L/KM or %@MI./GAL.",[carInfo objectForKey:@"FUEL CONSUMPTION_CITY (L/100 km)"],[carInfo objectForKey:@"FUEL CONSUMPTION_CITY (mi./gal.)"],[carInfo objectForKey:@"FUEL CONSUMPTION_HWY (L/100 km)"],[carInfo objectForKey:@"FUEL CONSUMPTION_HWY (mi./gal.)"]]];
+    [cell.fuelPerYearLabel setText:[NSString stringWithFormat:@"Fuel: %@L/YEAR",[carInfo objectForKey:@"FUEL_(L) / YEAR"]]];
+    [cell.emissionLabel setText:[NSString stringWithFormat:@"CO2 Emission: %@KG/YEAR",[carInfo objectForKey:@"CO2 EMISSIONS_(kg) / YEAR"]]];
+
+    if ([[globals.BOOKMARK_DICT allKeys] containsObject:[carInfo objectForKey:@"id"]]) {
+        cell.bookmarkButton .selected = TRUE;
     }else{
-        [bookmarkButton setSelected:FALSE];
+        cell.bookmarkButton.selected = FALSE;
     }
-    [self.view addSubview:bookmarkButton];
+    [cell.bookmarkButton addTarget:self action:@selector(bookmarkItem:event:) forControlEvents:UIControlEventTouchUpInside];
+    [cell.shareButton addTarget:self action:@selector(shareItem:event:) forControlEvents:UIControlEventTouchUpInside];
+    cell.userInteractionEnabled = TRUE;
+    return cell;
+
+}
+
+-(float)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    return CAR_LIST_CELL_HEIGHT;
+}
+
+-(float)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+
+    return CAR_HEADER_HEIGHT;
     
 }
 
+
+//custom header view
+-(UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UIView *customView = [[UIView alloc]init];
+   
+    [customView setFrame:CGRectMake(0, 0, self.view.frame.size.width, CAR_HEADER_HEIGHT)];
+    [customView setBackgroundColor:[UIColor colorWithWhite:0.9 alpha:1.0]];
+    
+    //init done button
+    UIButton *donebutton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [donebutton setFrame:CGRectMake(self.view.frame.size.width/2 - 30, 20, 60, 40)];
+    [donebutton setTitle:@"Done" forState:UIControlStateNormal];
+    [donebutton addTarget:self action:@selector(dismissCurrentView) forControlEvents:UIControlEventTouchUpInside];
+    [customView addSubview:donebutton];
+    return customView;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+  
+    carDict = [carMatchListData objectAtIndex:indexPath.row];
+    
+}
+
+/*
+// Override to support conditional editing of the table view.
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // Return NO if you do not want the specified item to be editable.
+    return YES;
+}
+*/
+
+/*
+// Override to support editing the table view.
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        // Delete the row from the data source
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }   
+    else if (editingStyle == UITableViewCellEditingStyleInsert) {
+        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+    }   
+}
+*/
+
+/*
+// Override to support rearranging the table view.
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
+{
+}
+*/
+
+/*
+// Override to support conditional rearranging of the table view.
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // Return NO if you do not want the item to be re-orderable.
+    return YES;
+}
+*/
+
+//dismiss current view, go back to car match view
+-(void)dismissCurrentView{
+    [self dismissViewControllerAnimated:YES completion:Nil];
+}
+
 //share current view content
--(void)shareItem:(id)sender{
+-(void)shareItem:(id)sender event:(UIEvent *)event{
+     NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:[[[event touchesForView:sender] anyObject] locationInView:self.tableView]];
+    carDict = [carMatchListData objectAtIndex:indexPath.row];
+    
     UIViewController *popOverContent = [[UIViewController alloc]init];
     UIView *popoverView = [[UIView alloc]init];
     
@@ -175,7 +230,7 @@
     UILabel *msgLabel = [[UILabel alloc]initWithFrame:CGRectMake(messageButton.frame.origin.x, CGRectGetMaxY(messageButton.frame), messageButton.frame.size.width, 30)];
     [msgLabel setText:@"Message"];
     [msgLabel setTextAlignment:NSTextAlignmentCenter];
-    [msgLabel setFont:[UIFont systemFontOfSize:10.0]];
+    [msgLabel setFont:[UIFont systemFontOfSize:12.0]];
     [popoverView addSubview:msgLabel];
     
     popOverContent.view = popoverView;
@@ -189,18 +244,18 @@
 -(void)emailItem{
     MFMailComposeViewController *mailController = [[MFMailComposeViewController alloc]init];
     mailController.mailComposeDelegate = self;
-//    NSString *mimeType;
-//    NSString *dataPath;
-//    NSString *fileName;
+    //    NSString *mimeType;
+    //    NSString *dataPath;
+    //    NSString *fileName;
     NSString *emailBody = [NSString stringWithFormat:@"Year: %@ \nManufacturer: %@ \nModel: %@ \nVehicle Class: %@ \nEngine Size: %@ \nCylinders: %@ \nTransmission: %@ \nFuel Type: %@ \nFuel Consumption: City: %@L/100KM or %@MI./GAL., Hwy: %@L/KM or %@MI./GAL. \nFuel: %@L/YEAR \nCO2 Emission: %@KG/YEAR \n",[carDict objectForKey:@"year"],[carDict objectForKey:@"MANUFACTURER"],[carDict objectForKey:@"MODEL"],[carDict objectForKey:@"VEHICLE CLASS"],[carDict objectForKey:@"ENGINE SIZE"],[carDict objectForKey:@"CYLINDERS"],[carDict objectForKey:@"TRANSMISSION"],[carDict objectForKey:@"FUEL TYPE"],[carDict objectForKey:@"FUEL CONSUMPTION_CITY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_CITY (mi./gal.)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (mi./gal.)"],[carDict objectForKey:@"FUEL_(L) / YEAR"],[carDict objectForKey:@"CO2 EMISSIONS_(kg) / YEAR"]];
-//        NSData *myData;
-//        if(funType == IMAGE)
-//        {
-//            mimeType=@"image/png";
-//            //dataPath = [NSString stringWithFormat:@"%@/images1/%@.jpg",globals.URL,imageName];//[[NSBundle mainBundle] pathForResource:@"funnyimage" ofType:@".jpg"];
-//            myData = imageData;
-//            fileName = imageName;
-//        [mailController addAttachmentData:myData mimeType:mimeType fileName:fileName];
+    //        NSData *myData;
+    //        if(funType == IMAGE)
+    //        {
+    //            mimeType=@"image/png";
+    //            //dataPath = [NSString stringWithFormat:@"%@/images1/%@.jpg",globals.URL,imageName];//[[NSBundle mainBundle] pathForResource:@"funnyimage" ofType:@".jpg"];
+    //            myData = imageData;
+    //            fileName = imageName;
+    //        [mailController addAttachmentData:myData mimeType:mimeType fileName:fileName];
     
     
     [mailController setSubject:@"CarMatch --- Have Fun!"];
@@ -243,22 +298,22 @@
 -(void)sendMessage{
     MFMessageComposeViewController *messageController = [[MFMessageComposeViewController alloc] init];
     messageController.messageComposeDelegate = self;
-        
+    
     NSString *msg = [NSString stringWithFormat:@"Year: %@ \nManufacturer: %@ \nModel: %@ \nVehicle Class: %@ \nEngine Size: %@ \nCylinders: %@ \nTransmission: %@ \nFuel Type: %@ \nFuel Consumption: City: %@L/100KM or %@MI./GAL., Hwy: %@L/KM or %@MI./GAL. \nFuel: %@L/YEAR \nCO2 Emission: %@KG/YEAR \n",[carDict objectForKey:@"year"],[carDict objectForKey:@"MANUFACTURER"],[carDict objectForKey:@"MODEL"],[carDict objectForKey:@"VEHICLE CLASS"],[carDict objectForKey:@"ENGINE SIZE"],[carDict objectForKey:@"CYLINDERS"],[carDict objectForKey:@"TRANSMISSION"],[carDict objectForKey:@"FUEL TYPE"],[carDict objectForKey:@"FUEL CONSUMPTION_CITY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_CITY (mi./gal.)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (L/100 km)"],[carDict objectForKey:@"FUEL CONSUMPTION_HWY (mi./gal.)"],[carDict objectForKey:@"FUEL_(L) / YEAR"],[carDict objectForKey:@"CO2 EMISSIONS_(kg) / YEAR"]];
     messageController.body = msg;
     
-        
-//        BOOL didAttachImage = [messageController addAttachmentData:imageData typeIdentifier:@"public.data" filename:[NSString stringWithFormat:@"%@.jpg",imageName]];
-//        
-//        messageController.body = @"---amuseMe";
-//        if (!didAttachImage){
-//            UIAlertView *warningAlert = [[UIAlertView alloc] initWithTitle:@"Error"
-//                                                                   message:@"Failed to attach image"
-//                                                                  delegate:nil
-//                                                         cancelButtonTitle:@"OK"
-//                                                         otherButtonTitles:nil];
-//            [warningAlert show];
- 
+    
+    //        BOOL didAttachImage = [messageController addAttachmentData:imageData typeIdentifier:@"public.data" filename:[NSString stringWithFormat:@"%@.jpg",imageName]];
+    //
+    //        messageController.body = @"---amuseMe";
+    //        if (!didAttachImage){
+    //            UIAlertView *warningAlert = [[UIAlertView alloc] initWithTitle:@"Error"
+    //                                                                   message:@"Failed to attach image"
+    //                                                                  delegate:nil
+    //                                                         cancelButtonTitle:@"OK"
+    //                                                         otherButtonTitles:nil];
+    //            [warningAlert show];
+    
     if (messageController) {
         [self presentViewController:messageController animated:YES completion:nil];
         [popOverController dismissPopoverAnimated:YES];
@@ -295,7 +350,11 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
--(void)bookmarkItem:(id)sender{
+-(void)bookmarkItem:(id)sender event:(UIEvent *)event{
+    
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:[[[event touchesForView:sender] anyObject] locationInView:self.tableView]];
+    carDict = [carMatchListData objectAtIndex:indexPath.row];
+
     UIButton *button = (UIButton*)sender;
     if (!button.selected) {
         //bookmark item
@@ -304,7 +363,7 @@
         }else{
             [globals.BOOKMARK_DICT setObject:carDict forKey:[carDict objectForKey:@"id"]];
         }
-         button.selected = TRUE;
+        button.selected = TRUE;
     }else{
         [globals.BOOKMARK_DICT removeObjectForKey:[carDict objectForKey:@"id"]];
         button.selected = FALSE;
@@ -314,12 +373,5 @@
     [globals.BOOKMARK_DICT writeToFile:globals.BOOKMARK_PLIST_FILE atomically:YES];
 }
 
-
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 @end

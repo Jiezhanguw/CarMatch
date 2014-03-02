@@ -15,6 +15,23 @@
     if (!globals) {
         globals = [Globals instance];
     }
+    
+    //init globals file pathes
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    globals.LOCAL_DOCS_PATH = [[NSString alloc]initWithString:documentsDirectory];
+    //plist file path for bookmarked items
+    globals.BOOKMARK_PLIST_FILE = [globals.LOCAL_DOCS_PATH stringByAppendingPathComponent:@"bookmark.plist"];
+    //if bookmark file exists, get the bookmarked cars' inform
+    if ([fileManager fileExistsAtPath:globals.BOOKMARK_PLIST_FILE]) {
+        globals.BOOKMARK_DICT = [NSMutableDictionary dictionaryWithContentsOfFile:globals.BOOKMARK_PLIST_FILE];
+    }
+    //init bookmark dictioanry
+    if (!globals.BOOKMARK_DICT) {
+        globals.BOOKMARK_DICT = [[NSMutableDictionary alloc]init];
+    }
+    
     globals.FILTER_DICT = [[NSMutableDictionary alloc]init];
     NSString *carDataFile = [[NSBundle mainBundle]pathForResource:@"totalcars" ofType:@"plist"];
     globals.ALL_CAR_DICT = [NSMutableDictionary dictionaryWithContentsOfFile:carDataFile];

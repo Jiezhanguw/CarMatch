@@ -31,4 +31,7 @@ static Globals *_instance = nil;
 @synthesize CAR_MODEL_ARR;
 @synthesize CAR_YEAR_ARR;
 @synthesize FILTER_DICT;
+@synthesize BOOKMARK_DICT;
+@synthesize LOCAL_DOCS_PATH;
+@synthesize BOOKMARK_PLIST_FILE;
 @end

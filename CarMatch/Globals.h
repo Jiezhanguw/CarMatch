@@ -26,4 +26,11 @@
 @property(nonatomic,strong)NSMutableDictionary *CAR_GROUPED_DICT;
 //dictionary for filter information
 @property(nonatomic,strong)NSMutableDictionary *FILTER_DICT;
+//dictionary of all bookmarked cars
+@property(nonatomic,strong)NSMutableDictionary *BOOKMARK_DICT;
+//local document path
+@property(nonatomic,strong)NSString *LOCAL_DOCS_PATH;
+//file path for bookmark plist
+@property(nonatomic,strong)NSString *BOOKMARK_PLIST_FILE;
+
 @end

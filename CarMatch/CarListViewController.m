@@ -49,8 +49,7 @@
     filterSetArray = [@[@"Year",@"Manufacturer",@"Model"]mutableCopy];
     carListData = [globals.ALL_CAR_DICT allValues];
 
-    yearArray = [[globals.CAR_YEAR_ARR sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]mutableCopy];
-    [yearArray insertObject:@"NULL" atIndex:0];
+    yearArray = [@[@"NULL",@"2000",@"2001",@"2002",@"2003",@"2004",@"2005",@"2006",@"2007",@"2008",@"2009",@"2010",@"2011",@"2012",@"2013",@"2014"]mutableCopy];
     manufacArray = [[globals.CAR_MANUFAC_ARR sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]mutableCopy];
     [manufacArray insertObject:@"NULL" atIndex:0];
     modelArray = [[globals.CAR_MODEL_ARR  sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]mutableCopy];
@@ -104,8 +103,8 @@
         //cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.textLabel.text = [filterSetArray objectAtIndex:indexPath.row];
         cell.textLabel.textAlignment = NSTextAlignmentCenter;
-        UIColor * color = [UIColor colorWithRed:69/255.0f green:227/255.0f blue:221/255.0f alpha:1.0f];
-        cell.backgroundColor = color;
+        //UIColor * color = [UIColor colorWithRed:69/255.0f green:227/255.0f blue:221/255.0f alpha:1.0f];
+        cell.backgroundColor = [UIColor yellowColor];
         return cell;
     }else{
         
@@ -117,9 +116,29 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         NSDictionary *carDict = [carListData objectAtIndex:indexPath.row];
         
-        cell.carImageView.image = [UIImage imageNamed:@"test.jpeg"];
+        NSString *yearStr = [carDict objectForKey:@"year"];
+        if ([yearStr isEqualToString:@"2104"]) {
+            yearStr = @"2014";
+        }
+
+        NSString *imageStr1 = [[NSString stringWithFormat:@"%@_%@_%@",yearStr,[carDict objectForKey:@"MANUFACTURER"],[carDict objectForKey:@"MODEL"]]lowercaseString];
+        NSString *imageStr2;
+        NSString *imagePath = [[NSBundle mainBundle]pathForResource:imageStr1 ofType:@"jpg"];
+        if (imagePath.length < 1) {
+            imageStr2 = [[NSString stringWithFormat:@"%@_%@_%@",yearStr,[carDict objectForKey:@"MANUFACTURER"],[carDict objectForKey:@"MODEL"]]lowercaseString];
+            imagePath = [[NSBundle mainBundle]pathForResource:imageStr2 ofType:@"jpeg"];
+            
+            if (imagePath.length < 1) {
+                cell.carImageView.image = [UIImage imageNamed:@"test.jpg"];
+            }else{
+                cell.carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpeg",imageStr2]];
+            }
+            
+        }else{
+            cell.carImageView.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@.jpg",imageStr1]];
+        }
         
-        [cell.carYearLabel setText:[carDict objectForKey:@"year"]];
+        [cell.carYearLabel setText:yearStr];
         [cell.carBrandLabel setText:[carDict objectForKey:@"MANUFACTURER"]];
         [cell.carModelLabel setText:[carDict objectForKey:@"MODEL"]];
         [cell.carClassLabel setText:[carDict objectForKey:@"VEHICLE CLASS"]];
@@ -290,6 +309,9 @@
         [filterSetArray replaceObjectAtIndex:indexOfTableViewCell withObject:selectedStr];
         
         if (indexOfTableViewCell == 0) {
+            if ([selectedStr isEqualToString:@"2014"]) {
+                selectedStr = @"2104";
+            }
             [globals.FILTER_DICT setObject:selectedStr forKey:@"year"];
         }else if (indexOfTableViewCell == 1){
             [globals.FILTER_DICT setObject:selectedStr forKey:@"MANUFACTURER"];
@@ -336,6 +358,7 @@
     NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
     NSDictionary *carDict = [carListData objectAtIndex:indexPath.row];
     destViewController.carDict = carDict;
+    destViewController.isBookmark = FALSE;
 }
 
 //filter the cars based on user's selection
