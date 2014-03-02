@@ -9,10 +9,66 @@
 #import "CarMatchAppDelegate.h"
 
 @implementation CarMatchAppDelegate
-
+@synthesize globals;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    if (!globals) {
+        globals = [Globals instance];
+    }
+    globals.FILTER_DICT = [[NSMutableDictionary alloc]init];
+    NSString *carDataFile = [[NSBundle mainBundle]pathForResource:@"totalcars" ofType:@"plist"];
+    globals.ALL_CAR_DICT = [NSMutableDictionary dictionaryWithContentsOfFile:carDataFile];
+    globals.CAR_CLASS_DICT = [[NSMutableDictionary alloc]init];
+    globals.CAR_YEAR_ARR = [[NSMutableArray alloc]init];
+    globals.CAR_MANUFAC_ARR = [[NSMutableArray alloc]init];
+    globals.CAR_MODEL_ARR = [[NSMutableArray alloc]init];
+    globals.CAR_GROUPED_DICT = [[NSMutableDictionary alloc]init];
+    for(NSDictionary *carDict in [globals.ALL_CAR_DICT allValues]){
+        
+        //grouped by vihical class
+        if (![[globals.CAR_CLASS_DICT allKeys] containsObject:[carDict objectForKey:@"VEHICLE CLASS"]]) {
+            NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:carDict,[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]], nil];
+            [globals.CAR_CLASS_DICT setObject:tempDict forKey:[carDict objectForKey:@"VEHICLE CLASS"]];
+        }else{
+            [[globals.CAR_CLASS_DICT objectForKey:[carDict objectForKey:@"VEHICLE CLASS"]] setObject:carDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]]];
+        }
+        
+        //grouped by year
+        if (![globals.CAR_YEAR_ARR containsObject:[carDict objectForKey:@"year"]]) {
+           [globals.CAR_YEAR_ARR addObject: [carDict objectForKey:@"year"]];
+        }
+
+        //grouped by model
+        if (![globals.CAR_MODEL_ARR containsObject:[carDict objectForKey:@"MODEL"]]){
+           
+            [globals.CAR_MODEL_ARR addObject: [carDict objectForKey:@"MODEL"]];
+            
+        }
+        //grouped by manufacturer
+        if (![globals.CAR_MANUFAC_ARR containsObject:[carDict objectForKey:@"MANUFACTURER"]]) {
+            [globals.CAR_MANUFAC_ARR addObject:[carDict objectForKey:@"MANUFACTURER"]];
+
+        }
+
+
+        
+        if (![[globals.CAR_GROUPED_DICT allKeys] containsObject:[carDict objectForKey:@"year"]]) {
+            NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithObject:carDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]]];
+            NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObject:tempDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"MODEL"]]];
+            NSMutableDictionary *manufacDict = [NSMutableDictionary dictionaryWithObject:modelDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"MANUFACTURER"]]];
+            [globals.CAR_GROUPED_DICT setObject:manufacDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"year"]]];
+        }else if(![[[globals.CAR_GROUPED_DICT objectForKey:[carDict objectForKey:@"year"]]allKeys] containsObject:[carDict objectForKey:@"MANUFACTURER"]]){
+            NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithObject:carDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]]];
+            NSMutableDictionary *modelDict = [NSMutableDictionary dictionaryWithObject:tempDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"MODEL"]]];
+            [[globals.CAR_GROUPED_DICT objectForKey:[carDict objectForKey:@"year"]] setObject:modelDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"MANUFACTURER"]]];
+        }else if (![[[[globals.CAR_GROUPED_DICT objectForKey:[carDict objectForKey:@"year"]]objectForKey:[carDict objectForKey:@"MANUFACTURER"]] allKeys] containsObject:[carDict objectForKey:@"MODEL"]]){
+             NSMutableDictionary *tempDict = [NSMutableDictionary dictionaryWithObject:carDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]]];
+            [[[globals.CAR_GROUPED_DICT objectForKey:[carDict objectForKey:@"year"]]objectForKey:[carDict objectForKey:@"MANUFACTURER"]]setObject:tempDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"MODEL"]]];
+        }else{
+            [[[[globals.CAR_GROUPED_DICT objectForKey:[carDict objectForKey:@"year"]]objectForKey:[carDict objectForKey:@"MANUFACTURER"]]objectForKey:[carDict objectForKey:@"MODEL"]] setObject:carDict forKey:[NSString stringWithFormat:@"%@",[carDict objectForKey:@"id"]]];
+        }
+        
+    }
     return YES;
 }
 							

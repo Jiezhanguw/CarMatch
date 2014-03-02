@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Globals.h"
 
 @interface CarMatchAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-
+@property (strong, nonatomic) Globals *globals;
 @end
